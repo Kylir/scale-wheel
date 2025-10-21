@@ -1,0 +1,131 @@
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 30px;
+}
+
+#scale-wheel {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: grab;
+}
+
+#scale-wheel:active {
+    cursor: grabbing;
+}
+
+.segment {
+    stroke: #333;
+    stroke-width: 1;
+    transition: fill 0.2s;
+}
+
+.segment.in-scale {
+    fill: #4CAF50;
+}
+
+.segment.out-of-scale {
+    fill: #ddd;
+}
+
+.segment.root-segment {
+    stroke: #E91E63;
+    stroke-width: 3;
+}
+
+.note-label {
+    font-size: 18px;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+}
+
+.note-label.in-scale {
+    fill: #333;
+}
+
+.note-label.out-of-scale {
+    fill: #999;
+}
+
+.scale-type-label {
+    font-size: 16px;
+    font-weight: bold;
+    fill: #fff;
+    user-select: none;
+    pointer-events: none;
+}
+
+#scale-info {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#scale-name {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 24px;
+}
+
+#scale-notes {
+    margin: 0;
+    color: #666;
+    font-size: 18px;
+}
+
+#fretboard-container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#fretboard-container h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 24px;
+}
+
+.fret-line {
+    stroke: #333;
+    stroke-width: 2;
+}
+
+.string-line {
+    stroke: #666;
+    stroke-width: 1.5;
+}
+
+.fretboard-note {
+    fill: #4CAF50;
+    stroke: #333;
+    stroke-width: 1;
+}
+
+.fretboard-note.root-note {
+    stroke: #E91E63;
+    stroke-width: 3;
+}
+
+.fret-number {
+    font-size: 14px;
+    fill: #666;
+    user-select: none;
+}

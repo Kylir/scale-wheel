@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale Wheel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Scale Wheel</h1>
+        <svg id="scale-wheel" width="600" height="600" viewBox="0 0 600 600">
+            <g id="wheel-group"></g>
+            <g id="labels-group"></g>
+        </svg>
+        <div id="scale-info">
+            <h2 id="scale-name"></h2>
+            <p id="scale-notes"></p>
+        </div>
+        <div id="fretboard-container">
+            <h2>Guitar Fretboard</h2>
+            <svg id="fretboard" width="800" height="200" viewBox="0 0 800 200"></svg>
+        </div>
+    </div>
+    <script src="scale-wheel.js"></script>
+</body>
+</html>
