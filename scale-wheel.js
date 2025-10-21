@@ -3,7 +3,6 @@
 
 const NOTES = ['C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/Bb', 'B'];
 const MAJOR_SCALE_INTERVALS = [2, 2, 1, 2, 2, 2, 1];
-// const GUITAR_TUNING = [4, 9, 2, 7, 11, 4];
 const GUITAR_TUNING = [4, 11, 7, 2, 9, 4];
 
 
@@ -220,8 +219,10 @@ const svg = document.getElementById('scale-wheel');
 function handleStart(clientX, clientY) {
     isDragging = true;
     const rect = svg.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const scaleX = 600 / rect.width;
+    const scaleY = 600 / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
     lastAngle = getAngleFromMouse(x, y);
 }
 
@@ -229,8 +230,10 @@ function handleMove(clientX, clientY) {
     if (!isDragging) return;
 
     const rect = svg.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const scaleX = 600 / rect.width;
+    const scaleY = 600 / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
     const currentAngle = getAngleFromMouse(x, y);
 
     const deltaAngle = currentAngle - lastAngle;
