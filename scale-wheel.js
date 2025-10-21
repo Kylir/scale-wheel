@@ -217,35 +217,66 @@ function animateToAngle(targetAngle) {
 
 const svg = document.getElementById('scale-wheel');
 
-svg.addEventListener('mousedown', (e) => {
+function handleStart(clientX, clientY) {
     isDragging = true;
     const rect = svg.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    lastAngle = getAngleFromMouse(mouseX, mouseY);
-});
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    lastAngle = getAngleFromMouse(x, y);
+}
 
-svg.addEventListener('mousemove', (e) => {
+function handleMove(clientX, clientY) {
     if (!isDragging) return;
 
     const rect = svg.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const currentAngle = getAngleFromMouse(mouseX, mouseY);
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    const currentAngle = getAngleFromMouse(x, y);
 
     const deltaAngle = currentAngle - lastAngle;
     currentRotation = (currentRotation + deltaAngle + 360) % 360;
     lastAngle = currentAngle;
 
     renderWheel();
+}
+
+function handleEnd() {
+    isDragging = false;
+}
+
+svg.addEventListener('mousedown', (e) => {
+    handleStart(e.clientX, e.clientY);
 });
 
-svg.addEventListener('mouseup', () => {
-    isDragging = false;
+svg.addEventListener('mousemove', (e) => {
+    handleMove(e.clientX, e.clientY);
 });
 
-svg.addEventListener('mouseleave', () => {
-    isDragging = false;
+svg.addEventListener('mouseup', handleEnd);
+svg.addEventListener('mouseleave', handleEnd);
+
+svg.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length > 0) {
+        handleStart(e.touches[0].clientX, e.touches[0].clientY);
+    }
+});
+
+svg.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length > 0) {
+        handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+});
+
+svg.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    handleEnd();
+});
+
+svg.addEventListener('touchcancel', (e) => {
+    e.preventDefault();
+    handleEnd();
 });
 
 renderWheel();

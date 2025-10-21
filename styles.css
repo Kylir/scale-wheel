@@ -17,10 +17,14 @@ h1 {
 }
 
 #scale-wheel {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: grab;
+    touch-action: none;
 }
 
 #scale-wheel:active {
@@ -128,4 +132,57 @@ h1 {
     font-size: 14px;
     fill: #666;
     user-select: none;
+}
+
+#fretboard {
+    width: 100%;
+    height: auto;
+    touch-action: pan-y;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    #scale-wheel {
+        max-width: 90vw;
+    }
+
+    #scale-info {
+        margin-top: 20px;
+        padding: 15px;
+    }
+
+    #scale-name {
+        font-size: 20px;
+    }
+
+    #scale-notes {
+        font-size: 16px;
+    }
+
+    #fretboard-container {
+        margin-top: 20px;
+        padding: 15px;
+        overflow-x: auto;
+    }
+
+    #fretboard-container h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    #fretboard {
+        min-width: 600px;
+    }
 }
