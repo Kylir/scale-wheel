@@ -145,6 +145,15 @@ h1 {
     background-color: #3d8b40;
 }
 
+#chord-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+    color: #333;
+    font-size: 18px;
+    text-align: center;
+}
+
 #fretboard-container {
     margin-top: 30px;
     padding: 20px;

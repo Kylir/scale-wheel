@@ -100,6 +100,11 @@ function updateScaleInfo(rootNoteIndex, scaleNotes) {
     renderFretboard(rootNoteIndex, scaleNotes);
 }
 
+function displayChordDetails(chord) {
+    const chordDetails = document.getElementById('chord-details');
+    chordDetails.innerHTML = `<strong>${chord.name}:</strong> ${chord.noteNames.join(' ')}`;
+}
+
 function displayChords(chords1, chords2) {
     const chordsList = document.getElementById('chords-list');
     chordsList.innerHTML = '';
@@ -110,9 +115,13 @@ function displayChords(chords1, chords2) {
             button.className = 'chord-button';
             button.textContent = chord.name;
             button.dataset.notes = JSON.stringify(chord.notes);
-            button.addEventListener('click', () => playChord(chord.notes));
+            button.addEventListener('click', () => {
+                playChord(chord.notes);
+                displayChordDetails(chord);
+            });
             chordsList.appendChild(button);
         });
+        displayChordDetails(chords1[0]);
     } else {
         const row1 = document.createElement('div');
         row1.className = 'chord-row';
@@ -121,7 +130,10 @@ function displayChords(chords1, chords2) {
             button.className = 'chord-button';
             button.textContent = chord.name;
             button.dataset.notes = JSON.stringify(chord.notes);
-            button.addEventListener('click', () => playChord(chord.notes));
+            button.addEventListener('click', () => {
+                playChord(chord.notes);
+                displayChordDetails(chord);
+            });
             row1.appendChild(button);
         });
 
@@ -133,12 +145,16 @@ function displayChords(chords1, chords2) {
             button.className = 'chord-button';
             button.textContent = chord.name;
             button.dataset.notes = JSON.stringify(chord.notes);
-            button.addEventListener('click', () => playChord(chord.notes));
+            button.addEventListener('click', () => {
+                playChord(chord.notes);
+                displayChordDetails(chord);
+            });
             row2.appendChild(button);
         });
 
         chordsList.appendChild(row1);
         chordsList.appendChild(row2);
+        displayChordDetails(chords1[0]);
     }
 }
 

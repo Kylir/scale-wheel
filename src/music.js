@@ -146,6 +146,9 @@ function buildTriadsFromScale(scaleNotes, scaleNoteNames) {
         const fifth = scaleNotes[(i + 4) % 7];
 
         const rootName = scaleNoteNames[i];
+        const thirdName = scaleNoteNames[(i + 2) % 7];
+        const fifthName = scaleNoteNames[(i + 4) % 7];
+
         const thirdInterval = (third - root + 12) % 12;
         const fifthInterval = (fifth - root + 12) % 12;
 
@@ -161,6 +164,7 @@ function buildTriadsFromScale(scaleNotes, scaleNoteNames) {
         chords.push({
             name: rootName + quality,
             notes: [root, third, fifth],
+            noteNames: [rootName, thirdName, fifthName],
             degree: i + 1
         });
     }
