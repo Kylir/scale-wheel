@@ -1,10 +1,5 @@
-// ABOUTME: Scale wheel visualization for musicians to see notes in different keys
-// ABOUTME: Displays a circular wheel with 12 chromatic notes and draggable scale pattern
-
-const NOTES = ['C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/Bb', 'B'];
-const MAJOR_SCALE_INTERVALS = [2, 2, 1, 2, 2, 2, 1];
-const GUITAR_TUNING = [4, 11, 7, 2, 9, 4];
-
+// ABOUTME: UI rendering and user interaction handling
+// ABOUTME: Manages SVG rendering, DOM updates, and mouse/touch events
 
 const CENTER_X = 300;
 const CENTER_Y = 300;
@@ -16,18 +11,9 @@ let currentRotation = 0;
 let isDragging = false;
 let lastAngle = 0;
 let animationFrameId = null;
+let hasDragged = false;
 
-function getMajorScaleNotes(rootIndex) {
-    const scaleNotes = [rootIndex];
-    let currentIndex = rootIndex;
-
-    for (let i = 0; i < MAJOR_SCALE_INTERVALS.length - 1; i++) {
-        currentIndex = (currentIndex + MAJOR_SCALE_INTERVALS[i]) % 12;
-        scaleNotes.push(currentIndex);
-    }
-
-    return scaleNotes;
-}
+const svg = document.getElementById('scale-wheel');
 
 function createSegmentPath(index, isInScale) {
     const radius = isInScale ? LONG_RADIUS : SHORT_RADIUS;
@@ -61,6 +47,7 @@ function renderWheel() {
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', createSegmentPath(i, isInScale));
             path.setAttribute('class', `segment ${isInScale ? 'in-scale' : 'out-of-scale'} ${isRoot ? 'root-segment' : ''}`);
+            path.setAttribute('data-segment-index', i);
             wheelGroup.appendChild(path);
         }
     }
@@ -90,13 +77,69 @@ function updateScaleInfo(rootNoteIndex, scaleNotes) {
     const scaleName = document.getElementById('scale-name');
     const scaleNotesList = document.getElementById('scale-notes');
 
-    const rootNote = NOTES[rootNoteIndex];
-    scaleName.textContent = `${rootNote} Major`;
+    const scales = getScaleSpellings(rootNoteIndex);
 
-    const noteNames = scaleNotes.map(index => NOTES[index]).join(', ');
-    scaleNotesList.textContent = noteNames;
+    if (scales.length === 1) {
+        scaleName.textContent = scales[0].name;
+        scaleNotesList.textContent = scales[0].notes.join(', ');
+
+        const chords = buildTriadsFromScale(scales[0].noteIndices, scales[0].notes);
+        displayChords(chords);
+    } else {
+        scaleName.textContent = scales[0].name + ' / ' + scales[1].name;
+        scaleNotesList.innerHTML = `
+            <div>${scales[0].name}: ${scales[0].notes.join(', ')}</div>
+            <div style="margin-top: 10px;">${scales[1].name}: ${scales[1].notes.join(', ')}</div>
+        `;
+
+        const chords1 = buildTriadsFromScale(scales[0].noteIndices, scales[0].notes);
+        const chords2 = buildTriadsFromScale(scales[1].noteIndices, scales[1].notes);
+        displayChords(chords1, chords2);
+    }
 
     renderFretboard(rootNoteIndex, scaleNotes);
+}
+
+function displayChords(chords1, chords2) {
+    const chordsList = document.getElementById('chords-list');
+    chordsList.innerHTML = '';
+
+    if (!chords2) {
+        chords1.forEach(chord => {
+            const button = document.createElement('button');
+            button.className = 'chord-button';
+            button.textContent = chord.name;
+            button.dataset.notes = JSON.stringify(chord.notes);
+            button.addEventListener('click', () => playChord(chord.notes));
+            chordsList.appendChild(button);
+        });
+    } else {
+        const row1 = document.createElement('div');
+        row1.className = 'chord-row';
+        chords1.forEach(chord => {
+            const button = document.createElement('button');
+            button.className = 'chord-button';
+            button.textContent = chord.name;
+            button.dataset.notes = JSON.stringify(chord.notes);
+            button.addEventListener('click', () => playChord(chord.notes));
+            row1.appendChild(button);
+        });
+
+        const row2 = document.createElement('div');
+        row2.className = 'chord-row';
+        row2.style.marginTop = '10px';
+        chords2.forEach(chord => {
+            const button = document.createElement('button');
+            button.className = 'chord-button';
+            button.textContent = chord.name;
+            button.dataset.notes = JSON.stringify(chord.notes);
+            button.addEventListener('click', () => playChord(chord.notes));
+            row2.appendChild(button);
+        });
+
+        chordsList.appendChild(row1);
+        chordsList.appendChild(row2);
+    }
 }
 
 function renderFretboard(rootNoteIndex, scaleNotes) {
@@ -214,10 +257,21 @@ function animateToAngle(targetAngle) {
     animationFrameId = requestAnimationFrame(animate);
 }
 
-const svg = document.getElementById('scale-wheel');
+function handleSegmentClick(event) {
+    if (hasDragged) return;
+
+    const segmentIndex = parseInt(event.target.getAttribute('data-segment-index'));
+    if (isNaN(segmentIndex)) return;
+
+    const rotationInSemitones = Math.round(currentRotation / 30);
+    const actualNoteIndex = (segmentIndex + rotationInSemitones) % 12;
+
+    playNote(actualNoteIndex);
+}
 
 function handleStart(clientX, clientY) {
     isDragging = true;
+    hasDragged = false;
     const rect = svg.getBoundingClientRect();
     const scaleX = 600 / rect.width;
     const scaleY = 600 / rect.height;
@@ -237,6 +291,9 @@ function handleMove(clientX, clientY) {
     const currentAngle = getAngleFromMouse(x, y);
 
     const deltaAngle = currentAngle - lastAngle;
+    if (Math.abs(deltaAngle) > 0.5) {
+        hasDragged = true;
+    }
     currentRotation = (currentRotation + deltaAngle + 360) % 360;
     lastAngle = currentAngle;
 
@@ -248,6 +305,9 @@ function handleEnd() {
 }
 
 svg.addEventListener('mousedown', (e) => {
+    if (!synth) {
+        initAudio();
+    }
     handleStart(e.clientX, e.clientY);
 });
 
@@ -255,11 +315,20 @@ svg.addEventListener('mousemove', (e) => {
     handleMove(e.clientX, e.clientY);
 });
 
-svg.addEventListener('mouseup', handleEnd);
+svg.addEventListener('mouseup', (e) => {
+    if (e.target.hasAttribute('data-segment-index')) {
+        handleSegmentClick(e);
+    }
+    handleEnd();
+});
+
 svg.addEventListener('mouseleave', handleEnd);
 
 svg.addEventListener('touchstart', (e) => {
     e.preventDefault();
+    if (!synth) {
+        initAudio();
+    }
     if (e.touches.length > 0) {
         handleStart(e.touches[0].clientX, e.touches[0].clientY);
     }
@@ -274,6 +343,9 @@ svg.addEventListener('touchmove', (e) => {
 
 svg.addEventListener('touchend', (e) => {
     e.preventDefault();
+    if (e.target.hasAttribute('data-segment-index')) {
+        handleSegmentClick(e);
+    }
     handleEnd();
 });
 
@@ -281,5 +353,3 @@ svg.addEventListener('touchcancel', (e) => {
     e.preventDefault();
     handleEnd();
 });
-
-renderWheel();

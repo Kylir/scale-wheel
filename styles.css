@@ -1,3 +1,8 @@
+html {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
 body {
     margin: 0;
     padding: 20px;
@@ -91,6 +96,53 @@ h1 {
     margin: 0;
     color: #666;
     font-size: 18px;
+}
+
+#chords-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+#chords-section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 20px;
+}
+
+#chords-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.chord-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.chord-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.chord-button:hover {
+    background-color: #45a049;
+}
+
+.chord-button:active {
+    transform: scale(0.95);
+    background-color: #3d8b40;
 }
 
 #fretboard-container {
