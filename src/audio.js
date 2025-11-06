@@ -18,25 +18,28 @@ async function initAudio() {
     }).toDestination();
 }
 
-function indexToNoteName(noteIndex) {
+function indexToNoteName(noteIndex, rootNoteIndex) {
     const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    return noteNames[noteIndex] + '4';
+    const octave = noteIndex >= rootNoteIndex ? 3 : 4;
+    return noteNames[noteIndex] + octave;
 }
 
-function playNote(noteIndex) {
+function playNote(noteIndex, rootNoteIndex) {
     if (!synth) {
         initAudio();
         return;
     }
-    const noteName = indexToNoteName(noteIndex);
+    const noteName = indexToNoteName(noteIndex, rootNoteIndex);
     synth.triggerAttackRelease(noteName, '0.5');
 }
 
-function playChord(noteIndices) {
+function playChord(noteIndices, rootNoteIndex) {
     if (!synth) {
         initAudio();
         return;
     }
-    const noteNames = noteIndices.map(index => indexToNoteName(index));
+    const chordRoot = noteIndices[0];
+    const noteNames = noteIndices.map(index => indexToNoteName(index, chordRoot));
+    console.log('Playing chord:', noteNames);
     synth.triggerAttackRelease(noteNames, '0.8');
 }

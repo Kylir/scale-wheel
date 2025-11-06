@@ -12,8 +12,24 @@ let isDragging = false;
 let lastAngle = 0;
 let animationFrameId = null;
 let hasDragged = false;
+let currentRootNoteIndex = 0;
+let currentScaleNotes = [];
+let selectedChord = null;
 
 const svg = document.getElementById('scale-wheel');
+
+function getRomanNumeral(degree, quality) {
+    const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+    const numeral = romanNumerals[degree - 1];
+
+    if (quality === 'm') {
+        return numeral.toLowerCase();
+    } else if (quality === 'dim') {
+        return numeral.toLowerCase() + '°';
+    } else {
+        return numeral;
+    }
+}
 
 function createSegmentPath(index, isInScale) {
     const radius = isInScale ? LONG_RADIUS : SHORT_RADIUS;
@@ -77,6 +93,10 @@ function updateScaleInfo(rootNoteIndex, scaleNotes) {
     const scaleName = document.getElementById('scale-name');
     const scaleNotesList = document.getElementById('scale-notes');
 
+    currentRootNoteIndex = rootNoteIndex;
+    currentScaleNotes = scaleNotes;
+    selectedChord = null;
+
     const scales = getScaleSpellings(rootNoteIndex);
 
     if (scales.length === 1) {
@@ -100,65 +120,109 @@ function updateScaleInfo(rootNoteIndex, scaleNotes) {
     renderFretboard(rootNoteIndex, scaleNotes);
 }
 
-function displayChordDetails(chord) {
-    const chordDetails = document.getElementById('chord-details');
-    chordDetails.innerHTML = `<strong>${chord.name}:</strong> ${chord.noteNames.join(' ')}`;
+function displayChordDetails(chord, buttonElement) {
+    const allButtons = document.querySelectorAll('.chord-button');
+
+    if (selectedChord && selectedChord.name === chord.name) {
+        selectedChord = null;
+        const chordDetails = document.getElementById('chord-details');
+        chordDetails.innerHTML = '&nbsp;';
+        renderFretboard(currentRootNoteIndex, currentScaleNotes);
+        allButtons.forEach(btn => btn.classList.remove('selected'));
+    } else {
+        selectedChord = chord;
+        const chordDetails = document.getElementById('chord-details');
+        chordDetails.innerHTML = `<strong>${chord.name}:</strong> ${chord.noteNames.join(' ')}`;
+        renderFretboard(currentRootNoteIndex, currentScaleNotes, chord.notes);
+        allButtons.forEach(btn => btn.classList.remove('selected'));
+        buttonElement.classList.add('selected');
+    }
 }
 
 function displayChords(chords1, chords2) {
     const chordsList = document.getElementById('chords-list');
+    const chordDetails = document.getElementById('chord-details');
     chordsList.innerHTML = '';
+    chordDetails.innerHTML = '&nbsp;';
 
     if (!chords2) {
         chords1.forEach(chord => {
+            const container = document.createElement('div');
+            container.className = 'chord-container';
+
+            const degree = document.createElement('div');
+            degree.className = 'chord-degree';
+            degree.textContent = getRomanNumeral(chord.degree, chord.name.includes('dim') ? 'dim' : chord.name.includes('m') ? 'm' : '');
+
             const button = document.createElement('button');
             button.className = 'chord-button';
             button.textContent = chord.name;
             button.dataset.notes = JSON.stringify(chord.notes);
             button.addEventListener('click', () => {
-                playChord(chord.notes);
-                displayChordDetails(chord);
+                playChord(chord.notes, currentRootNoteIndex);
+                displayChordDetails(chord, button);
             });
-            chordsList.appendChild(button);
+
+            container.appendChild(degree);
+            container.appendChild(button);
+            chordsList.appendChild(container);
         });
-        displayChordDetails(chords1[0]);
     } else {
         const row1 = document.createElement('div');
         row1.className = 'chord-row';
         chords1.forEach(chord => {
+            const container = document.createElement('div');
+            container.className = 'chord-container';
+
+            const degree = document.createElement('div');
+            degree.className = 'chord-degree';
+            degree.textContent = getRomanNumeral(chord.degree, chord.name.includes('dim') ? 'dim' : chord.name.includes('m') ? 'm' : '');
+
             const button = document.createElement('button');
             button.className = 'chord-button';
             button.textContent = chord.name;
             button.dataset.notes = JSON.stringify(chord.notes);
             button.addEventListener('click', () => {
-                playChord(chord.notes);
-                displayChordDetails(chord);
+                playChord(chord.notes, currentRootNoteIndex);
+                displayChordDetails(chord, button);
             });
-            row1.appendChild(button);
+
+            container.appendChild(degree);
+            container.appendChild(button);
+            row1.appendChild(container);
         });
 
         const row2 = document.createElement('div');
         row2.className = 'chord-row';
         row2.style.marginTop = '10px';
         chords2.forEach(chord => {
+            const container = document.createElement('div');
+            container.className = 'chord-container';
+
+            const degree = document.createElement('div');
+            degree.className = 'chord-degree';
+            degree.textContent = getRomanNumeral(chord.degree, chord.name.includes('dim') ? 'dim' : chord.name.includes('m') ? 'm' : '');
+
             const button = document.createElement('button');
             button.className = 'chord-button';
             button.textContent = chord.name;
             button.dataset.notes = JSON.stringify(chord.notes);
             button.addEventListener('click', () => {
-                playChord(chord.notes);
-                displayChordDetails(chord);
+                playChord(chord.notes, currentRootNoteIndex);
+                displayChordDetails(chord, button);
             });
-            row2.appendChild(button);
+
+            container.appendChild(degree);
+            container.appendChild(button);
+            row2.appendChild(container);
         });
 
         chordsList.appendChild(row1);
         chordsList.appendChild(row2);
-        displayChordDetails(chords1[0]);
     }
 }
 
-function renderFretboard(rootNoteIndex, scaleNotes) {
+function renderFretboard(rootNoteIndex, scaleNotes, highlightedChordNotes = null) {
     const fretboard = document.getElementById('fretboard');
     fretboard.innerHTML = '';
 
@@ -214,12 +278,18 @@ function renderFretboard(rootNoteIndex, scaleNotes) {
                 const x = startX + (fret === 0 ? -20 : fret * fretWidth - fretWidth / 2);
                 const y = startY + string * stringSpacing;
                 const isRoot = noteIndex === rootNoteIndex;
+                const isInChord = highlightedChordNotes && highlightedChordNotes.includes(noteIndex);
 
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 circle.setAttribute('cx', x);
                 circle.setAttribute('cy', y);
                 circle.setAttribute('r', 12);
-                circle.setAttribute('class', `fretboard-note ${isRoot ? 'root-note' : ''}`);
+
+                let classes = 'fretboard-note';
+                if (isRoot) classes += ' root-note';
+                if (highlightedChordNotes && !isInChord) classes += ' non-chord-note';
+
+                circle.setAttribute('class', classes);
                 fretboard.appendChild(circle);
             }
         }
@@ -282,7 +352,7 @@ function handleSegmentClick(event) {
     const rotationInSemitones = Math.round(currentRotation / 30);
     const actualNoteIndex = (segmentIndex + rotationInSemitones) % 12;
 
-    playNote(actualNoteIndex);
+    playNote(actualNoteIndex, currentRootNoteIndex);
 }
 
 function handleStart(clientX, clientY) {
