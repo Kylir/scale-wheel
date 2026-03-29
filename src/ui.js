@@ -14,6 +14,7 @@ let animationFrameId = null;
 let hasDragged = false;
 let currentRootNoteIndex = 0;
 let currentScaleNotes = [];
+let currentNoteNameMap = {};
 let selectedChord = null;
 
 const svg = document.getElementById('scale-wheel');
@@ -103,6 +104,8 @@ function updateScaleInfo(rootNoteIndex, scaleNotes) {
         scaleName.textContent = scales[0].name;
         scaleNotesList.textContent = scales[0].notes.join(', ');
 
+        scales[0].noteIndices.forEach((idx, i) => { currentNoteNameMap[idx] = scales[0].notes[i]; });
+
         const chords = buildTriadsFromScale(scales[0].noteIndices, scales[0].notes);
         displayChords(chords);
     } else {
@@ -112,12 +115,14 @@ function updateScaleInfo(rootNoteIndex, scaleNotes) {
             <div style="margin-top: 10px;">${scales[1].name}: ${scales[1].notes.join(', ')}</div>
         `;
 
+        scales[0].noteIndices.forEach((idx, i) => { currentNoteNameMap[idx] = scales[0].notes[i]; });
+
         const chords1 = buildTriadsFromScale(scales[0].noteIndices, scales[0].notes);
         const chords2 = buildTriadsFromScale(scales[1].noteIndices, scales[1].notes);
         displayChords(chords1, chords2);
     }
 
-    renderFretboard(rootNoteIndex, scaleNotes);
+    renderFretboard(rootNoteIndex, scaleNotes, null, currentNoteNameMap);
 }
 
 function displayChordDetails(chord, buttonElement) {
@@ -127,13 +132,13 @@ function displayChordDetails(chord, buttonElement) {
         selectedChord = null;
         const chordDetails = document.getElementById('chord-details');
         chordDetails.innerHTML = '&nbsp;';
-        renderFretboard(currentRootNoteIndex, currentScaleNotes);
+        renderFretboard(currentRootNoteIndex, currentScaleNotes, null, currentNoteNameMap);
         allButtons.forEach(btn => btn.classList.remove('selected'));
     } else {
         selectedChord = chord;
         const chordDetails = document.getElementById('chord-details');
         chordDetails.innerHTML = `<strong>${chord.name}:</strong> ${chord.noteNames.join(' ')}`;
-        renderFretboard(currentRootNoteIndex, currentScaleNotes, chord.notes);
+        renderFretboard(currentRootNoteIndex, currentScaleNotes, chord.notes, currentNoteNameMap);
         allButtons.forEach(btn => btn.classList.remove('selected'));
         buttonElement.classList.add('selected');
     }
@@ -222,7 +227,7 @@ function displayChords(chords1, chords2) {
     }
 }
 
-function renderFretboard(rootNoteIndex, scaleNotes, highlightedChordNotes = null) {
+function renderFretboard(rootNoteIndex, scaleNotes, highlightedChordNotes = null, noteNameMap = {}) {
     const fretboard = document.getElementById('fretboard');
     fretboard.innerHTML = '';
 
@@ -278,7 +283,7 @@ function renderFretboard(rootNoteIndex, scaleNotes, highlightedChordNotes = null
                 const x = startX + (fret === 0 ? -20 : fret * fretWidth - fretWidth / 2);
                 const y = startY + string * stringSpacing;
                 const isRoot = noteIndex === rootNoteIndex;
-                const isInChord = highlightedChordNotes && highlightedChordNotes.includes(noteIndex);
+                const chordTone = highlightedChordNotes ? highlightedChordNotes.indexOf(noteIndex) : -1;
 
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 circle.setAttribute('cx', x);
@@ -286,11 +291,26 @@ function renderFretboard(rootNoteIndex, scaleNotes, highlightedChordNotes = null
                 circle.setAttribute('r', 12);
 
                 let classes = 'fretboard-note';
-                if (isRoot) classes += ' root-note';
-                if (highlightedChordNotes && !isInChord) classes += ' non-chord-note';
+                if (highlightedChordNotes) {
+                    if (chordTone === -1) classes += ' non-chord-note';
+                    if (chordTone === 0) classes += ' chord-root';
+                    if (chordTone === 1) classes += ' chord-third';
+                    if (chordTone === 2) classes += ' chord-fifth';
+                } else if (isRoot) {
+                    classes += ' root-note';
+                }
 
                 circle.setAttribute('class', classes);
                 fretboard.appendChild(circle);
+
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', y);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('dominant-baseline', 'central');
+                label.setAttribute('class', 'fretboard-note-label');
+                label.textContent = noteNameMap[noteIndex] || NOTES[noteIndex];
+                fretboard.appendChild(label);
             }
         }
     }

@@ -1,3 +1,9 @@
+:root {
+    --accent-color: #008080;
+    --chord-third-color: #FF8C00;
+    --chord-fifth-color: #FFD700;
+}
+
 html {
     overflow-y: auto;
     scrollbar-gutter: stable;
@@ -43,7 +49,7 @@ h1 {
 }
 
 .segment.in-scale {
-    fill: #4CAF50;
+    fill: var(--accent-color);
 }
 
 .segment.out-of-scale {
@@ -139,7 +145,7 @@ h1 {
 
 .chord-button {
     padding: 10px 20px;
-    background-color: #4CAF50;
+    background-color: var(--accent-color);
     color: white;
     border: none;
     border-radius: 4px;
@@ -152,12 +158,12 @@ h1 {
 }
 
 .chord-button:hover {
-    background-color: #45a049;
+    background-color: #006666;
 }
 
 .chord-button:active {
     transform: scale(0.95);
-    background-color: #3d8b40;
+    background-color: #005555;
 }
 
 .chord-button.selected {
@@ -199,7 +205,7 @@ h1 {
 }
 
 .fretboard-note {
-    fill: #4CAF50;
+    fill: var(--accent-color);
     stroke: #333;
     stroke-width: 1;
 }
@@ -208,9 +214,32 @@ h1 {
     fill: #ccc;
 }
 
+.fretboard-note.chord-root {
+    stroke: #E91E63;
+    stroke-width: 3;
+}
+
+.fretboard-note.chord-third {
+    stroke: var(--chord-third-color);
+    stroke-width: 3;
+}
+
+.fretboard-note.chord-fifth {
+    stroke: var(--chord-fifth-color);
+    stroke-width: 3;
+}
+
 .fretboard-note.root-note {
     stroke: #E91E63;
     stroke-width: 3;
+}
+
+.fretboard-note-label {
+    font-size: 8px;
+    font-weight: bold;
+    fill: white;
+    user-select: none;
+    pointer-events: none;
 }
 
 .fret-number {
